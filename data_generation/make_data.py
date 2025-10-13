@@ -62,7 +62,6 @@ if __name__ == "__main__":
             # compare_images([synthetic_img, mask], ["Synthetic image", "mask"])
 
             # Save to dataset
-            input(label.split(".")[0])
             datapoint_name = f"{label.split(".")[0]}-{str(i).zfill(5)}"
 
             image = Image.fromarray(synthetic_img)
