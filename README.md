@@ -4,6 +4,8 @@
 
 **self_supervision_detection** trains a detection model for a single frame of fruit flies with the synthetic data.
 
+**setup.py** Allows us to `pip install -e .` the folders that we decide to make modules for use in other code.
+
 Future:
 - Extend **self_supervision_detection** to track flies over time
 - Predict fly trajectories

@@ -1,5 +1,3 @@
 dataset/images/*
 dataset/masks/*
 .venv/
-utilities.egg-info/
-utilities/__pycache__/

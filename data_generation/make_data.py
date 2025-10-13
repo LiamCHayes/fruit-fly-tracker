@@ -8,7 +8,7 @@ import os
 import numpy as np
 from PIL import Image, ImageOps
 from tqdm import tqdm
-from utilities import load_and_resize_image, load_image, show_image, compare_images
+from utilities.image_utils import load_and_resize_image, load_image, show_image, compare_images
 
 # Draw samples for fruit fly location
 def sample_fly_positions(n_samples, fly_radius):

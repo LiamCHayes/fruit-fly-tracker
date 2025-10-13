@@ -4,7 +4,7 @@
 
 0. Make sure you have numpy, PIL, and matplotlib available in your environment.
 1. Put your background image in "dataset/backgrounds/\[your_image\].jpg". Make sure it is at least 6mp.
-2. Run `pip install -e .` from the "data_generation" directory to install the utility functions.
+2. Run `pip install -e .` from the root directory of this project to install the utility functions.
 3. Edit the make_data.py script in the main function to choose how many datapoints per background image and the size of the generated flies.
 4. Run make_data.py from the "data_generation" directory.
 
