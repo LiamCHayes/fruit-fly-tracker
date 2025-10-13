@@ -4,8 +4,10 @@ Generates labelled fruit fly scenes with black dots as fruit flies
 1000 images from each background
 """
 
+import os
 import numpy as np
 from PIL import Image, ImageOps
+from tqdm import tqdm
 from utilities import load_and_resize_image, load_image, show_image, compare_images
 
 # Draw samples for fruit fly location
@@ -39,30 +41,33 @@ def draw_flies(background, fly_positions, fly_radius):
     return new_image, mask
 
 if __name__ == "__main__":
-    # Choose things for the generated data
-    background_label = "liam_veggies"
-    img_path = f"dataset/backgrounds/{background_label}.jpg"
+    # Choose things for the generated data 
+    background_labels = os.listdir("dataset/backgrounds")
     n_datapoints = 1000
     fly_radius = 5
 
-    # Load and check if the image is the correct size
-    background = load_image(img_path)
-    if background.shape != (2048, 3072, 3):
-        background = load_and_resize_image(img_path)
-    # show_image(background, "Original background")
+    for label in background_labels:
+        # Load and check if the image is the correct size
+        print(f"Generating flies on {label}...")
+        img_path = f"dataset/backgrounds/{label}"
+        background = load_image(img_path)
+        if background.shape != (2048, 3072, 3):
+            background = load_and_resize_image(img_path)
 
-    fly_positions = sample_fly_positions(n_datapoints, fly_radius)
+        # Generate random fly positions
+        fly_positions = sample_fly_positions(n_datapoints, fly_radius)
 
-    for i in range(n_datapoints):
-        synthetic_img, mask = draw_flies(background, fly_positions[i], fly_radius)
-        # compare_images([synthetic_img, mask], ["Synthetic image", "mask"])
-        
-        # Save to dataset
-        datapoint_name = f"{background_label}-{str(i).zfill(5)}"
+        for i in tqdm(range(n_datapoints)):
+            synthetic_img, mask = draw_flies(background, fly_positions[i], fly_radius)
+            # compare_images([synthetic_img, mask], ["Synthetic image", "mask"])
 
-        image = Image.fromarray(synthetic_img)
-        image.save(f"dataset/images/{datapoint_name}.jpg")
+            # Save to dataset
+            input(label.split(".")[0])
+            datapoint_name = f"{label.split(".")[0]}-{str(i).zfill(5)}"
 
-        mask = Image.fromarray(mask.astype(np.uint8) * 255)
-        mask.save(f"dataset/masks/{datapoint_name}.png")
+            image = Image.fromarray(synthetic_img)
+            image.save(f"dataset/images/{datapoint_name}.jpeg")
+
+            mask = Image.fromarray(mask.astype(np.uint8) * 255)
+            mask.save(f"dataset/masks/{datapoint_name}.png")
 

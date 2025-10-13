@@ -19,7 +19,7 @@ def load_and_resize_image(img_path, target_size=(3072, 2048)):
                 method=Image.Resampling.BICUBIC
                 )
         resized.save(img_path)
-        print(f"[INFO] Resized image to (2048, 3072) and saved to {img_path}")
+        print(f"[INFO] Resized image from ({img.height}, {img.width}) to (2048, 3072) and saved to {img_path}")
 
     return np.array(resized)
 
