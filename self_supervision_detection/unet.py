@@ -8,7 +8,6 @@ import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.encoders import get_preprocessing_fn
 import matplotlib.pyplot as plt
 from utilities import SyntheticData
-from tqdm import tqdm
 
 # Hyperparameters
 epochs = 10
@@ -57,10 +56,11 @@ for epoch in range(epochs):
     # Record loss
     running_loss /= len(dataloader)
     epoch_losses[epoch] = running_loss
-    print(f"Epoch {epoch}: {running_loss}")
 
-    # Test on mosquitos
+    # Save a forward pass of real data TODO
 
-# Plot loss
-plt.plot(np.arange(epochs), epoch_losses)
-plt.show()
+# make dataframe of losses and save
+training_metrics = pl.DataFrame({
+    "epoch_loss": epoch_losses
+    })
+training_metrics.write_csv("training_metrics.csv")
