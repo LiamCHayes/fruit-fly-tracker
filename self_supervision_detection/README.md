@@ -2,6 +2,12 @@
 
 Uses the synthetically generated dataset and self-supervision techniques on background images to build a fruit fly detection model for a single frame. First, train an encoder on the background images using self-supervision (image completeion, rotation prediction, colorization, etc) to understand the environemnt. Using this pre-trained encoder we train a pixel-wise segmentation model for predicting fruit fly location.
 
+## Running the code 
+
+Make sure to `pip install -e .` from the root of the project to be able to access the utility functions/classes
+
+## Outline
+
 TODO list:
 - [ ] Write the ResNet encoder
 - [ ] Write the self-supervision training loop for the encoder
@@ -27,3 +33,8 @@ Future directions:
 - [ ] Adapt for trajectory prediction
 - [ ] Use optical flow and SLAM techniques to detect, track, and predict trajectories while the camera is tilting and panning
 
+# Log
+
+TODO Fine-tune simple Unet with ResNet34 encoder on synthetic data from segmentation_models_pytorch library
+
+TODO write testing script to evaluate model on real-world data

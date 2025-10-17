@@ -19,3 +19,7 @@ The dataset is composed of three folders:
 **masks** contains the labels for the datapoint in the images directory. The naming convention is the same as images, except it is a png file instead of jpg. A 0 label means no fly and a 255 label means fly.
 
 NOTE: the **images** and **masks** directories are omitted with a .gitignore file to save space on the repository. When we want to train, we can generate the dataset locally with the make_data.py script.
+
+## Log
+
+Wrote script to make synthetic data by superimposing black dots on background images
