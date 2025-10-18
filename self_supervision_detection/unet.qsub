@@ -4,6 +4,7 @@
 #$ -P ec523bn
 #$ -l h_rt=12:00:00
 #$ -l gpu_c=6.0
+#$ -pe omp 28
 #$ -j y
 #$ -m e
 
