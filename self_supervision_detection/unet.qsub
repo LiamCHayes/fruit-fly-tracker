@@ -11,5 +11,5 @@ module load python3/3.10.12
 source /projectnb/ec523bn/students/liamh/fruit-fly-tracker/self_supervision_detection/.venv/bin/activate
 pip install -r requirements.txt
 
-python unet.py -i /projectnb/ec523bn/students/liamh/fly_data/synthetic_data/train/images/ -l /projectnb/ec523bn/students/liamh/fly_data/synthetic_data/train/masks/ -b /projectnb/ec523bn/students/liamh/fly_data/synthetic_data/backgrounds/
+python unet.py -i /projectnb/ec523bn/students/liamh/fly_data/synthetic_data/train/images/ -l /projectnb/ec523bn/students/liamh/fly_data/synthetic_data/train/masks/ -b /projectnb/ec523bn/students/liamh/fly_data/synthetic_data/backgrounds/ -o unet_output/
 

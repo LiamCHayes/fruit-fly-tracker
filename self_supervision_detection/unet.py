@@ -1,5 +1,6 @@
 """Base case for fly detection. Unet trained on synthetic data."""
 
+import os
 import torch
 from torch import optim
 from torch.utils.data import DataLoader
@@ -14,7 +15,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--images", help="path to the directory of images (end with /)")
 parser.add_argument("-l", "--labels", help="path to the directory of labels (end with /)")
 parser.add_argument("-b", "--backgrounds", help="path to the directory of backgrounds (end with /)")
+parser.add_argument("-o", "--output", help="path to the output directory (end with /)")
 args = parser.parse_args()
+
+if not os.path.isdir(args.output):
+    os.makedirs(args.output)
 
 # Hyperparameters
 epochs = 10
@@ -84,10 +89,10 @@ for epoch in range(epochs):
     print(f"Loss: {running_loss}\n")
 
     # Save a forward pass of real data
-    test_on_selected_images(model, full_transform, f"unet_{epoch}")
+    test_on_selected_images(model, full_transform, f"{args.output}unet_{epoch}")
 
 # make dataframe of losses and save
 training_metrics = pl.DataFrame({
     "epoch_loss": epoch_losses
     })
-training_metrics.write_csv("training_metrics.csv")
+training_metrics.write_csv(f"{args.output}training_metrics.csv")
