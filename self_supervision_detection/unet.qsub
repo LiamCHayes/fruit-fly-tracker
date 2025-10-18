@@ -9,8 +9,6 @@
 #$ -j y
 #$ -m e
 
-source /etc/profile.d/modules.sh
-module load python3/3.12.4
 rm -rf .venv
 python3.12 -m venv .venv
 source /projectnb/ec523bn/students/liamh/fruit-fly-tracker/self_supervision_detection/.venv/bin/activate
