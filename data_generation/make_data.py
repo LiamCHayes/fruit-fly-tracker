@@ -45,6 +45,11 @@ if __name__ == "__main__":
     background_labels = os.listdir("dataset/backgrounds")
     n_datapoints = 1000
     fly_radius = 5
+    train = True # if true, will save to the train dataset folder
+    if train:
+        dataset_folder = "train"
+    else:
+        dataset_folder = "test"
 
     for label in background_labels:
         # Load and check if the image is the correct size
@@ -65,8 +70,8 @@ if __name__ == "__main__":
             datapoint_name = f"{label.split(".")[0]}-{str(i).zfill(5)}"
 
             image = Image.fromarray(synthetic_img)
-            image.save(f"dataset/images/{datapoint_name}.jpeg")
+            image.save(f"dataset/{dataset_folder}/images/{datapoint_name}.jpeg")
 
             mask = Image.fromarray(mask.astype(np.uint8) * 255)
-            mask.save(f"dataset/masks/{datapoint_name}.png")
+            mask.save(f"dataset/{dataset_folder}/masks/{datapoint_name}.png")
 

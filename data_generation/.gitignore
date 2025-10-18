@@ -1,3 +1,5 @@
-dataset/images/*
-dataset/masks/*
+dataset/train/images/*
+dataset/train/masks/*
+dataset/test/images/*
+dataset/test/masks/*
 .venv/
