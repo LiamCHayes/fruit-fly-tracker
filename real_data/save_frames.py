@@ -31,7 +31,7 @@ while True:
 
     frame_filename = f"{video_name}_{frame_count:04d}.jpeg"
     cv2.imwrite(frames_path + frame_filename, frame)
-    if frame_count > 999:
+    if frame_count > 9999:
         print("[INFO] Video too long, saved 999 frames")
         break
 cap.release()

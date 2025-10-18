@@ -11,7 +11,7 @@ class SyntheticData(Dataset):
         self.image_dir = image_dir
         self.label_dir = label_dir 
         self.background_dir = background_dir
-        
+
         self.images = os.listdir(self.image_dir)
         self.labels = os.listdir(self.label_dir)
 
