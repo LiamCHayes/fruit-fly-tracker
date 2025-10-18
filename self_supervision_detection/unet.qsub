@@ -3,16 +3,17 @@
 #$ -N fruit_fly_unet
 #$ -P ec523bn
 #$ -l h_rt=12:00:00
-#$ -l gpu_c=6.0
 #$ -j y
 #$ -m e
 
+source /etc/profile.d/modules.sh
 module load python3/3.12.4
 rm -rf .venv
-python3 -m venv .venv
+python3.12 -m venv .venv
 source /projectnb/ec523bn/students/liamh/fruit-fly-tracker/self_supervision_detection/.venv/bin/activate
+
 pip install --upgrade pip==25.2
-pip install numpy torch torchvision PIL matplotlib segmentation_models_pytorch
+pip install numpy torch torchvision pillow matplotlib segmentation_models_pytorch
 cd ..
 pip install -e .
 cd self_supervision_detection
