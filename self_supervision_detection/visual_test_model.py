@@ -1,7 +1,5 @@
 """Function to visually test on real (out-of-sample) data"""
 
-import torch
-import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 
