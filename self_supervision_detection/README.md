@@ -37,4 +37,6 @@ Future directions:
 
 TODO Fine-tune simple Unet with ResNet34 encoder on synthetic data from segmentation_models_pytorch library
 
-TODO write testing script to evaluate model on real-world data
+Wrote testing script to evaluate model on real-world data
+
+TODO fix environment for qsub job
