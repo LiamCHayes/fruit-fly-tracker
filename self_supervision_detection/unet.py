@@ -23,7 +23,7 @@ if not os.path.isdir(args.output):
 
 # Hyperparameters
 epochs = 10
-batch_size = 1
+batch_size = 2
 if torch.cuda.is_available():
     device = torch.device("cuda")
 else:

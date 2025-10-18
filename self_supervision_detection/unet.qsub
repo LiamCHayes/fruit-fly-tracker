@@ -3,6 +3,7 @@
 #$ -N fruit_fly_unet
 #$ -P ec523bn
 #$ -l h_rt=12:00:00
+#$ -l gpus=1
 #$ -l gpu_c=6.0
 #$ -pe omp 28
 #$ -j y
