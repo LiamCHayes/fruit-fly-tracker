@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#$ -N fruit_fly_unet
+#$ -P ec523bn
+#$ -l h_rt=12:00:00
+#$ -l gpus=1
+#$ -l gpu_c=6.0
+#$ -pe omp 28
+#$ -j y
+#$ -m e
+
+module load miniconda
+module load academic-ml/fall-2025
+conda activate fall-2025-pyt
+
+python self_supervision.py.py -b /projectnb/ec523bn/students/liamh/fly_data/dataset/background_set_1/ -o self_supervision_output/ -t /projectnb/ec523bn/students/liamh/fly_data/dataset/backgrounds/counter_cluttered2.jpeg
+
