@@ -1,6 +1,5 @@
 """Self-supervision training loop for resnet on hi-res backgrounds - Image Completion"""
 
-from itertools import batched
 import os
 import argparse
 import torch
@@ -11,7 +10,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from encoder import ResNet50Encoder, preprocess, inv_normalize
 from decoder import ResNet50Decoder
-from utilities import SyntheticData
+from synthetic_dataset import SyntheticData
 from tile_picture import ImageTiler
 
 # parse args
