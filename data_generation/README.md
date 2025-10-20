@@ -23,3 +23,5 @@ NOTE: the **images** and **masks** directories are omitted with a .gitignore fil
 ## Log
 
 Wrote script to make synthetic data by superimposing black dots on background images
+
+TODO make synthetic flies more realistic

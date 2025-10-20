@@ -1,5 +1,2 @@
-dataset/train/images/*
-dataset/train/masks/*
-dataset/test/images/*
-dataset/test/masks/*
+dataset/*
 .venv/

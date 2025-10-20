@@ -6,7 +6,7 @@ Generates labelled fruit fly scenes with black dots as fruit flies
 
 import os
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
 from tqdm import tqdm
 from utilities.image_utils import load_and_resize_image, load_image, show_image, compare_images
 
