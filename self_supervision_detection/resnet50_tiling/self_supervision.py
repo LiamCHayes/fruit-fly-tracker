@@ -49,8 +49,6 @@ tiler = ImageTiler()
 # load the test image
 with Image.open(args.test) as img:
     test_img = dataset.img_transform(img).unsqueeze(0)
-test_mask = torch.ones_like(tiled_image)
-test_mask[:, :, 100:200, 100:200] = 0
 
 # training loop
 epoch_losses = [0.0 for _ in range(epochs)]
@@ -101,6 +99,8 @@ for epoch in range(epochs):
     # evaluate on the test image and save output every epoch
     model.eval()
     tiled_image = tiler.tile_image(test_img, batched=True)
+    test_mask = torch.ones_like(tiled_image)
+    test_mask[:, :, 100:200, 100:200] = 0
     masked_image = tiled_image * test_mask
     model_input = preprocess(masked_image).to(device)
     with torch.no_grad():
