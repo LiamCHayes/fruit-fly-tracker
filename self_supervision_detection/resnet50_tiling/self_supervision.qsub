@@ -6,6 +6,7 @@
 #$ -l gpus=1
 #$ -l gpu_c=6.0
 #$ -pe omp 16
+#$ -l gpu_memory=28
 #$ -j y
 #$ -m e
 
