@@ -1,5 +1,6 @@
 """Decoders for resnet encoder"""
 
+import torch
 import torch.nn as nn
 
 class ResNet50Decoder(nn.Module):
@@ -52,3 +53,6 @@ class ResNet50Decoder(nn.Module):
         x = self.classifier(x)
         return x
 
+    def save_checkpoint(self, whole_model_name, encoder_name):
+        torch.save(self.encoder.state_dict(), encoder_name)
+        torch.save(self.state_dict(), whole_model_name)

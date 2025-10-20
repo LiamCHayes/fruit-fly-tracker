@@ -3,11 +3,7 @@
 Uses the synthetically generated dataset and self-supervision techniques on background images to build a fruit fly detection model for a single frame. First, train an encoder on the background images using self-supervision (image completeion, rotation prediction, colorization, etc) to understand the environemnt. Using this pre-trained encoder we train a pixel-wise segmentation model for predicting fruit fly location.
 
 ## Running the code on the scc
-
-1. Each .py file has an associated .qsub file with the same name (unet.py and unet.qsub). git clone the repository to the scc and cd to the self\_supervision\_detection directory.
-2. scp the required data over to the scc with `scp -r [path_to_local_data] [scc_username]@scc1.bu.edu:[path_to_scc_data]`.
-3. Edit the last line of the qsub file to include the path to the required data in the scc.
-4. From the self\_supervision\_detection directory, run `qsub [filename].qsub`
+TODO do distributed training on multiple gpus
 
 To see the status of the job (r for running), run `qstat -u [scc_username]`
 

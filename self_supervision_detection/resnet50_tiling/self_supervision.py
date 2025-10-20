@@ -75,26 +75,35 @@ for epoch in range(epochs):
 
         # prepare for model input
         if args.debug:
-            model_input = preprocess(masked_images)[0, :, :, :].to(device).unsqueeze(0)
-            labels = tiled_labels[0, :, :, :].to(device).unsqueeze(0)
+            # only input one tile for faster forward pass
+            model_inputs = [preprocess(masked_images)[0, :, :, :].unsqueeze(0)]
+            split_labels = [tiled_labels[0, :, :, :].unsqueeze(0)]
         else:
-            model_input = preprocess(masked_images).to(device)
-            labels = tiled_labels.to(device)
+            # split the tiles into two batches so we can run on 16GB gpu
+            model_inputs = torch.split(preprocess(masked_images), 70, dim=0)
+            split_labels = torch.split(tiled_labels, 70, dim=0)
 
-        # learning step
-        output = model(model_input)
-        optimizer.zero_grad()
-        loss = loss_fn(output, labels)
-        loss.backward()
-        optimizer.step()
+        # learning step(s)
+        for i in range(len(model_inputs)):
+            model_input = model_inputs[i].to(device)
+            label = split_labels[i].to(device)
 
-        # record loss
-        running_loss += loss.cpu().item()
+            output = model(model_input)
+            optimizer.zero_grad()
+            loss = loss_fn(output, label)
+            loss.backward()
+            optimizer.step()
+
+            # record loss
+            running_loss += loss.cpu().item()
 
     # record loss
     running_loss /= len(dataloader)
     epoch_losses[epoch] = running_loss
     print(f"Loss: {running_loss}\n")
+
+    # Save checkpoint model
+    model.save_checkpoint(f"{args.output}full_model_epoch_{epoch}.pth", f"{args.output}encoder_epoch_{epoch}.pth")
 
     # evaluate on the test image and save output every epoch
     model.eval()
@@ -110,7 +119,7 @@ for epoch in range(epochs):
     output = inv_normalize(output).squeeze().detach().cpu().permute(1, 2, 0).numpy()
 
     masked_image = tiler.stitch_tiles(masked_image.cpu(), batched=True)
-    masked_image = inv_normalize(masked_image).squeeze().permute(1, 2, 0).numpy()
+    masked_image = masked_image.squeeze().permute(1, 2, 0).numpy()
 
     fig, axs = plt.subplots(1, 2, figsize=(12, 6))
     axs[0].imshow(masked_image)
