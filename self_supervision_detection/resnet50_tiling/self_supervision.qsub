@@ -13,5 +13,5 @@ module load miniconda
 module load academic-ml/fall-2025
 conda activate fall-2025-pyt
 
-python self_supervision.py.py -b /projectnb/ec523bn/students/liamh/fly_data/dataset/background_set_1/ -o self_supervision_output/ -t /projectnb/ec523bn/students/liamh/fly_data/dataset/backgrounds/counter_cluttered2.jpeg
+python self_supervision.py -b /projectnb/ec523bn/students/liamh/fly_data/dataset/background_set_1/ -o self_supervision_output/ -t /projectnb/ec523bn/students/liamh/fly_data/dataset/backgrounds/counter_cluttered2.jpeg
 
