@@ -1,5 +1,5 @@
 """
-Generates labelled fruit fly scenes with black dots as fruit flies
+Generates labeled fruit fly scenes with black dots as fruit flies
 
 1000 images from each background
 """
@@ -7,6 +7,7 @@ Generates labelled fruit fly scenes with black dots as fruit flies
 import os
 import numpy as np
 from PIL import Image
+from scipy.ndimage import gaussian_filter
 from tqdm import tqdm
 from utilities.image_utils import load_and_resize_image, load_image, show_image, compare_images
 
@@ -25,20 +26,59 @@ def sample_fly_positions(n_samples, fly_radius):
     return fly_positions
 
 # Place fruit flies
-def draw_flies(background, fly_positions, fly_radius):
+def add_fly(image, row, col, axes, angle_deg, color=(30,30,30), blur_sigma=1.5):
+    # TODO make fly a little bigger 
+    H, W = image.shape[:2]
+
+    # Create a grid in the region around the fly
+    y, x = np.ogrid[:H, :W]
+    angle = np.deg2rad(angle_deg)
+
+    # Ellipse formula (rotated)
+    x_rot = (x - col) * np.cos(angle) + (y - row) * np.sin(angle)
+    y_rot = -(x - col) * np.sin(angle) + (y - row) * np.cos(angle)
+    ellipse_mask = ((x_rot/axes[0])**2 + (y_rot/axes[1])**2) <= 1
+
+    # Darken pixels in the ellipse region
+    for c in range(3):
+        image[..., c][ellipse_mask] = color[c)
+    min_row = max(0, row - axes[1] - padding)
+    max_row = min(H, row + axes[1] + padding)
+    min_col = max(0, col - axes[0] - padding)
+    max_col = min(W, col + axes[0] + padding)
+
+    sub_img = image[min_row:max_row, min_col:max_col].copy()
+    sub_mask = ellipse_mask[min_row:max_row, min_col:max_col]
+
+    # Apply Gaussian blur only on the sub-image
+    for c in range(3):
+        channel = sub_img[..., c]
+        blurred_channel = gaussian_filter(channel, sigma=blur_sigma)
+
+        # Blend blurred and original based on mask - blur edges only
+        channel[sub_mask] = blurred_channel[sub_mask]
+        sub_img[..., c] = channel
+
+    # Put blurred region back in the original image
+    image[min_row:max_row, min_col:max_col] = sub_img
+
+    return image, ellipse_mask
+
+def draw_flies(background, fly_positions):
     """Draws flies on the background"""
     new_image = background.copy()
     row, col, _ = new_image.shape
     mask = np.zeros((row, col))
     for row, col in fly_positions:
-        fly_rows = np.arange(row - fly_radius, row + fly_radius)
-        fly_cols = np.arange(col - fly_radius, col + fly_radius)
-        new_image[np.ix_(fly_rows, fly_cols)] = [0, 0, 0]
-
-        # Generate segmentation mask
-        mask[np.ix_(fly_rows, fly_cols)] = 1
+        axes = (np.random.randint(3, 7), np.random.randint(1, 4))
+        angle = np.random.randint(0, 180)
+        new_image, mask = add_fly(new_image, row, col, axes, angle)
 
     return new_image, mask
+
+def generate_image(background_path):
+    # TODO make generate image and mask function for use in dataloader
+    pass
 
 if __name__ == "__main__":
     # Choose things for the generated data 
@@ -61,10 +101,11 @@ if __name__ == "__main__":
 
         # Generate random fly positions
         fly_positions = sample_fly_positions(n_datapoints, fly_radius)
+        print(fly_positions)
 
         for i in tqdm(range(n_datapoints)):
-            synthetic_img, mask = draw_flies(background, fly_positions[i], fly_radius)
-            # compare_images([synthetic_img, mask], ["Synthetic image", "mask"])
+            synthetic_img, mask = draw_flies(background, fly_positions[i])
+            compare_images([synthetic_img, mask], ["Synthetic image", "mask"])
 
             # Save to dataset
             datapoint_name = f"{label.split(".")[0]}-{str(i).zfill(5)}"
