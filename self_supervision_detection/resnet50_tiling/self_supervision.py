@@ -25,7 +25,7 @@ if not os.path.isdir(args.output):
     os.makedirs(args.output)
 
 # Hyperparameters
-epochs = 10
+epochs = 2048
 batch_size = 1
 max_h = 128
 max_w = 128
@@ -102,32 +102,34 @@ for epoch in range(epochs):
     epoch_losses[epoch] = running_loss
     print(f"Loss: {running_loss}\n")
 
-    # Save checkpoint model
-    model.save_checkpoint(f"{args.output}full_model_epoch_{epoch}.pth", f"{args.output}encoder_epoch_{epoch}.pth")
+    # Every few epochs
+    if (epoch+1) % 128 == 0:
+        # Save checkpoint model
+        model.save_checkpoint(f"{args.output}full_model_epoch_{epoch}.pth", f"{args.output}encoder_epoch_{epoch}.pth")
 
-    # evaluate on the test image and save output every epoch
-    model.eval()
-    tiled_image = tiler.tile_image(test_img, batched=True)
-    test_mask = torch.ones_like(tiled_image)
-    test_mask[:, :, 100:200, 100:200] = 0
-    masked_image = tiled_image * test_mask
-    model_input = preprocess(masked_image).to(device)
-    with torch.no_grad():
-        output = model(model_input)
+        # evaluate on the test image and save output
+        model.eval()
+        tiled_image = tiler.tile_image(test_img, batched=True)
+        test_mask = torch.ones_like(tiled_image)
+        test_mask[:, :, 100:200, 100:200] = 0
+        masked_image = tiled_image * test_mask
+        model_input = preprocess(masked_image).to(device)
+        with torch.no_grad():
+            output = model(model_input)
 
-    output = tiler.stitch_tiles(output.detach().cpu(), batched=True)
-    output = inv_normalize(output).squeeze().detach().cpu().permute(1, 2, 0).numpy()
+        output = tiler.stitch_tiles(output.detach().cpu(), batched=True)
+        output = inv_normalize(output).squeeze().detach().cpu().permute(1, 2, 0).numpy()
 
-    masked_image = tiler.stitch_tiles(masked_image.cpu(), batched=True)
-    masked_image = masked_image.squeeze().permute(1, 2, 0).numpy()
+        masked_image = tiler.stitch_tiles(masked_image.cpu(), batched=True)
+        masked_image = masked_image.squeeze().permute(1, 2, 0).numpy()
 
-    fig, axs = plt.subplots(1, 2, figsize=(12, 6))
-    axs[0].imshow(masked_image)
-    axs[1].imshow(output)
-    axs[0].axis("off")
-    axs[1].axis("off")
-    plt.savefig(f"{args.output}test_epoch_{epoch}.png")
-    plt.close()
+        fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+        axs[0].imshow(masked_image)
+        axs[1].imshow(output)
+        axs[0].axis("off")
+        axs[1].axis("off")
+        plt.savefig(f"{args.output}test_epoch_{epoch}.png")
+        plt.close()
 
 # make dataframe of losses and save
 training_metrics = pl.DataFrame({
