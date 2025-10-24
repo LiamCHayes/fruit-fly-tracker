@@ -80,13 +80,10 @@ def draw_flies(background, fly_positions):
 if __name__ == "__main__":
     # Choose things for the generated data 
     background_labels = os.listdir("dataset/backgrounds")
+    background_labels = [background_labels[3]] # Choose the image you want to add flies on
     n_datapoints = 500
     fly_radius = 5
-    train = True # if true, will save to the train dataset folder
-    if train:
-        dataset_folder = "train"
-    else:
-        dataset_folder = "test"
+    dataset_folder = "background_set_1_with_flies" # Folder in the dataset directory to save the images and masks to
 
     for label in background_labels:
         # Load and check if the image is the correct size
