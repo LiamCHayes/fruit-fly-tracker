@@ -27,7 +27,6 @@ def sample_fly_positions(n_samples, fly_radius):
 
 # Place fruit flies
 def add_fly(image, row, col, axes, angle_deg, color=(30,30,30), blur_sigma=1.5):
-    # TODO make fly a little bigger 
     H, W = image.shape[:2]
 
     # Create a grid in the region around the fly
@@ -41,7 +40,8 @@ def add_fly(image, row, col, axes, angle_deg, color=(30,30,30), blur_sigma=1.5):
 
     # Darken pixels in the ellipse region
     for c in range(3):
-        image[..., c][ellipse_mask] = color[c)
+        image[..., c][ellipse_mask] = color[c]
+    padding = int(3 * blur_sigma)
     min_row = max(0, row - axes[1] - padding)
     max_row = min(H, row + axes[1] + padding)
     min_col = max(0, col - axes[0] - padding)
@@ -70,20 +70,17 @@ def draw_flies(background, fly_positions):
     row, col, _ = new_image.shape
     mask = np.zeros((row, col))
     for row, col in fly_positions:
-        axes = (np.random.randint(3, 7), np.random.randint(1, 4))
+        axes = (np.random.randint(6, 10), np.random.randint(4, 8))
         angle = np.random.randint(0, 180)
-        new_image, mask = add_fly(new_image, row, col, axes, angle)
+        new_image, mask_addition = add_fly(new_image, row, col, axes, angle)
+        mask += mask_addition
 
     return new_image, mask
-
-def generate_image(background_path):
-    # TODO make generate image and mask function for use in dataloader
-    pass
 
 if __name__ == "__main__":
     # Choose things for the generated data 
     background_labels = os.listdir("dataset/backgrounds")
-    n_datapoints = 1000
+    n_datapoints = 500
     fly_radius = 5
     train = True # if true, will save to the train dataset folder
     if train:
@@ -101,11 +98,10 @@ if __name__ == "__main__":
 
         # Generate random fly positions
         fly_positions = sample_fly_positions(n_datapoints, fly_radius)
-        print(fly_positions)
 
         for i in tqdm(range(n_datapoints)):
             synthetic_img, mask = draw_flies(background, fly_positions[i])
-            compare_images([synthetic_img, mask], ["Synthetic image", "mask"])
+            # compare_images([synthetic_img, mask], ["Synthetic image", "mask"])
 
             # Save to dataset
             datapoint_name = f"{label.split(".")[0]}-{str(i).zfill(5)}"
