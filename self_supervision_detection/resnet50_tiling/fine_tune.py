@@ -1,5 +1,7 @@
 """Fine tune the self-supervised decoder on synthetic data"""
 
+# TODO test training loop, write qsub script, choose encoder weights to use, generate data on scc, train model
+
 import os
 import argparse
 import torch
