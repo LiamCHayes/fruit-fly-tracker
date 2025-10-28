@@ -4,6 +4,10 @@
 
 **self_supervision_detection** trains a detection model for a single frame of fruit flies with the synthetic data.
 
+**fixed_fruit_fly_detection** attempts to identify fruit flies with a fixed camera using background subtraction and other classical methods.
+
+**DeepMCBM** is the the implementation of a deep moving camera background model from Erez et al.
+
 **utilities** contains helper functions for use throughout the repository.
 
 **setup.py** Allows us to `pip install -e .` utilities and other folders that we decide to make modules for use in other code.
