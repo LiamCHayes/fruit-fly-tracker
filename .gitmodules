@@ -1,0 +1,3 @@
+[submodule "DeepMCBM"]
+	path = DeepMCBM
+	url = https://github.com/BGU-CS-VIL/DeepMCBM.git
