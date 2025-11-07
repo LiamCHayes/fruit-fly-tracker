@@ -8,6 +8,7 @@ import os
 # parse args
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--name", help="name of the .mp4 file (without the .mp4)")
+parser.add_argument("-f", "--frames", help="number of frames to save")
 args = parser.parse_args()
 
 # File path things
@@ -31,7 +32,6 @@ while True:
 
     frame_filename = f"{video_name}_{frame_count:04d}.jpeg"
     cv2.imwrite(frames_path + frame_filename, frame)
-    if frame_count > 9999:
-        print("[INFO] Video too long, saved 999 frames")
+    if frame_count > int(args.frames):
         break
 cap.release()
