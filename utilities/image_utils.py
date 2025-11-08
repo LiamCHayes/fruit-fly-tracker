@@ -52,3 +52,54 @@ def compare_images(images, titles=[]):
         axs[i].axis("off")
     plt.show()
     
+# Block images
+class BlockCoords:
+    def __init__(self, row_start, row_stop, col_start, col_stop):
+        self.row_start = row_start
+        self.row_stop = row_stop
+        self.col_start = col_start
+        self.col_stop = col_stop
+
+    def get_center(self, max_row):
+        return (self.col_start + self.col_stop) / 2, max_row - (self.row_start + self.row_stop) / 2
+
+    def shift(self, row_shift, col_shift):
+        row_start = self.row_start + row_shift
+        row_stop = self.row_stop + row_shift
+        col_start = self.col_start + col_shift
+        col_stop = self.col_stop + col_shift
+
+        shifted = BlockCoords(row_start, row_stop, col_start, col_stop)
+
+        return shifted
+
+    def __sub__(self, other):
+        if isinstance(other, BlockCoords):
+            return (self.row_start - other.row_start, self.col_start - other.col_start)
+        else:
+            raise TypeError("not supported")
+
+    def __str__(self):
+        return f"{self.row_start} {self.row_stop}\n{self.col_start} {self.col_stop}"
+
+def get_blocks(image, block_size):
+    """returns a list of blocks in row-major format"""
+    H, W, C = image.shape
+    n_h_tiles = int(H / block_size)
+    n_w_tiles = int(W / block_size)
+    coords = []
+    tiles = []
+    for row in range(n_h_tiles):
+        for col in range(n_w_tiles):
+            row_start = row * block_size
+            row_stop = (row+1) * block_size
+            col_start = col * block_size
+            col_stop = (col+1) * block_size
+            coords.append(BlockCoords(row_start, row_stop, col_start, col_stop))
+            tiles.append(image[row_start:row_stop, col_start:col_stop, :])
+    return tiles, coords
+
+# Visualize fourier transform
+def ft_viz(ft):
+    return np.log(np.abs(ft) + 1)
+
