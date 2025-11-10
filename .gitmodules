@@ -1,3 +1,6 @@
 [submodule "DeepMCBM"]
 	path = DeepMCBM
 	url = https://github.com/BGU-CS-VIL/DeepMCBM.git
+[submodule "ByteTrack"]
+	path = ByteTrack
+	url = https://github.com/FoundationVision/ByteTrack.git

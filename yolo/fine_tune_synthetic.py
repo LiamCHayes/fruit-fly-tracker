@@ -8,4 +8,4 @@ results = model.train(
         project="./runs",
         epochs=100,
         imgsz=1280,
-        batch=4)
+        batch=2)

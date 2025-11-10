@@ -5,6 +5,7 @@ Generates labeled fruit fly scenes with black dots as fruit flies
 """
 
 import os
+import random
 import numpy as np
 from PIL import Image
 from numpy.linalg import norm
@@ -26,62 +27,63 @@ def sample_fly_positions(n_samples, fly_radius):
 
     return fly_positions
 
-# Place fruit flies
-def add_fly(image, row, col, axes, angle_deg, color=(20,20,20), blur_sigma=1.5):
-    H, W = image.shape[:2]
+# Blends the fly into the background with an alpha mask
+def create_alpha_mask(image, threshold=160):
+    # Split image into channels
+    r, g, b, a = image.split()
+    # Create a new alpha mask
+    new_alpha = Image.new("L", image.size, 0)
 
-    # Create a grid in the region around the fly
-    y, x = np.ogrid[:H, :W]
-    angle = np.deg2rad(angle_deg)
+    # Load pixel data
+    pixels = image.load()
+    alpha_pixels = new_alpha.load()
 
-    # Ellipse formula (rotated)
-    x_rot = (x - col) * np.cos(angle) + (y - row) * np.sin(angle)
-    y_rot = -(x - col) * np.sin(angle) + (y - row) * np.cos(angle)
-    ellipse_mask = ((x_rot/axes[0])**2 + (y_rot/axes[1])**2) <= 1
+    # Loop through pixels and set alpha channel
+    for y in range(image.height):
+        for x in range(image.width):
+            r_val, g_val, b_val, _ = pixels[x, y]
+            # Calculate brightness
+            brightness = (r_val + g_val + b_val) // 3
+            if brightness < threshold:  # Threshold for dark pixels
+                alpha_pixels[x, y] = 255  # opaque
+            else:
+                alpha_pixels[x, y] = 0    # transparent
 
-    # Darken pixels in the ellipse region
-    for c in range(3):
-        image[..., c][ellipse_mask] = color[c]
-    padding = int(3 * blur_sigma)
-    min_row = max(0, row - axes[1] - padding)
-    max_row = min(H, row + axes[1] + padding)
-    min_col = max(0, col - axes[0] - padding)
-    max_col = min(W, col + axes[0] + padding)
+    return new_alpha
 
-    sub_img = image[min_row:max_row, min_col:max_col].copy()
-    sub_mask = ellipse_mask[min_row:max_row, min_col:max_col]
+# Place a single fruit fly
+def add_fly(background, cropped_fly, row, col, angle):
+    # create alpha mask
+    cropped_fly = cropped_fly.convert("RGBA")
+    alpha_mask = create_alpha_mask(cropped_fly)
 
-    # Apply Gaussian blur only on the sub-image
-    for c in range(3):
-        channel = sub_img[..., c]
-        blurred_channel = gaussian_filter(channel, sigma=blur_sigma)
+    # Paste the fly onto the background at position (x,y)
+    # TODO rotate the fly by angle?
+    position = (col, row)
+    background.paste(cropped_fly, position, mask=alpha_mask)
 
-        # Blend blurred and original based on mask - blur edges only
-        channel[sub_mask] = blurred_channel[sub_mask]
-        sub_img[..., c] = channel
+    # get height, width of the cropped fly and get bounding box
+    width, height = cropped_fly.size
+    bbox_coords = [col, row, width, height]
 
-    # Put blurred region back in the original image
-    image[min_row:max_row, min_col:max_col] = sub_img
+    return background, bbox_coords
 
-    return image, ellipse_mask
-
-def draw_flies(background, fly_positions):
+def draw_flies(background, fly_positions, fly_dir):
     """Draws flies on the background"""
     new_image = background.copy()
     row, col, _ = new_image.shape
     bbox_labels = []
     for row, col in fly_positions:
-        axes = (np.random.randint(6, 12), np.random.randint(4, 8))
+        # sample a fly from the cropped flies
+        cropped_fly_path = random.choice(fly_dir)
+        cropped_fly = Image.open(cropped_fly_path)
+
+        # paste fly
         angle = np.random.randint(0, 180)
-        new_image, mask_addition = add_fly(new_image, row, col, axes, angle)
+        new_image, bbox_coords = add_fly(new_image, cropped_fly, row, col, angle)
 
         # get yolo bounding box label
-        fly_pixels = np.where(mask_addition==True)
-        fly_rows = fly_pixels[0]
-        fly_cols = fly_pixels[1]
-        fly_width = np.max(fly_cols) - np.min(fly_cols)
-        fly_height = np.max(fly_rows) - np.min(fly_rows)
-        bbox_labels.append([col, row, fly_width, fly_height])
+        bbox_labels.append(bbox_coords)
 
     return new_image, bbox_labels
 
@@ -91,6 +93,9 @@ if __name__ == "__main__":
     n_datapoints = 50
     fly_radius = 5
     dataset_folder = "yolo_dataset" # Folder in the dataset directory to save the images and masks to
+
+    cropped_flies = os.listdir("dataset/flies")
+    cropped_flies = ["dataset/flies" + fly for fly in cropped_flies]
 
     # Loop through the backgrounds included for this dataset
     for label in background_labels:
@@ -108,7 +113,7 @@ if __name__ == "__main__":
 
         # Loop through randomly generated fly positions
         for i in tqdm(range(n_datapoints)):
-            synthetic_img, bbox_labels = draw_flies(background, fly_positions[i])
+            synthetic_img, bbox_labels = draw_flies(background, fly_positions[i], cropped_flies)
             # compare_images([synthetic_img, mask], ["Synthetic image", "mask"])
 
             # tile images for input to yolo
@@ -135,7 +140,7 @@ if __name__ == "__main__":
                 # Save tile and label
                 datapoint_name = f"{label.split(".")[0]}-{str(i).zfill(5)}-{str(j).zfill(2)}"
 
-                image = Image.fromarray(synthetic_img)
+                image = Image.fromarray(tiles[j])
                 image.save(f"dataset/{dataset_folder}/images/{set_name}/{datapoint_name}.jpeg")
 
                 with open(f"dataset/{dataset_folder}/labels/{set_name}/{datapoint_name}.txt", "w") as file:
