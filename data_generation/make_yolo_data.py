@@ -7,9 +7,8 @@ Generates labeled fruit fly scenes with black dots as fruit flies
 import os
 import random
 import numpy as np
-from PIL import Image
-from numpy.linalg import norm
-from scipy.ndimage import gaussian_filter
+from PIL import Image, ImageEnhance
+import cv2
 from tqdm import tqdm
 from utilities.image_utils import load_and_resize_image, load_image, show_image, compare_images, get_blocks
 
@@ -52,21 +51,64 @@ def create_alpha_mask(image, threshold=160):
     return new_alpha
 
 # Place a single fruit fly
-def add_fly(background, cropped_fly, row, col, angle):
+def add_fly(background, cropped_fly, row, col):
     # create alpha mask
     cropped_fly = cropped_fly.convert("RGBA")
     alpha_mask = create_alpha_mask(cropped_fly)
+    alpha_mask = np.array(alpha_mask)
+    mask = cv2.threshold(alpha_mask, 1, 255, cv2.THRESH_BINARY)[1]
+    width, height = cropped_fly.size
+
+    # increase contrast of the fly
+    cropped_fly = cropped_fly.convert("RGB")
+    enhancer = ImageEnhance.Contrast(cropped_fly)
+    cropped_fly = enhancer.enhance(2.5)
+    cropped_fly = np.array(cropped_fly)
+
+    # convert color spaces to bgr
+    cropped_fly = cv2.cvtColor(cropped_fly, cv2.COLOR_RGB2BGR)
+    background = cv2.cvtColor(background, cv2.COLOR_RGB2BGR)
 
     # Paste the fly onto the background at position (x,y)
-    # TODO rotate the fly by angle?
     position = (col, row)
-    background.paste(cropped_fly, position, mask=alpha_mask)
+    background2 = cv2.seamlessClone(cropped_fly, background, mask, position, cv2.NORMAL_CLONE)
 
-    # get height, width of the cropped fly and get bounding box
-    width, height = cropped_fly.size
+    # Darken the fly so it's visible
+    fly_pixels = np.where(background - background2 != 0)
+    background2[fly_pixels[0], fly_pixels[1], :] = background2[fly_pixels[0], fly_pixels[1], :] * 0.1
+
+    # add gaussian blur
+    blur_sigma = 2
+    dilation_size = 5
+    erode_size = 3
+
+    blurred_img = cv2.GaussianBlur(background2, (0, 0), sigmaX=blur_sigma, sigmaY=blur_sigma)
+
+    fly_mask = np.mean(np.zeros_like(background2), axis=2)
+    fly_mask[fly_pixels[0], fly_pixels[1]] = 255.0
+
+    dilation_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (dilation_size, dilation_size))
+    erode_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (erode_size, erode_size))
+    dilated_mask = cv2.dilate(fly_mask, dilation_kernel, iterations=1)
+    eroded_mask = cv2.erode(fly_mask, erode_kernel, iterations=1)
+
+    fly_mask_f = eroded_mask.astype(float) / 255.0
+    dilated_mask_f = dilated_mask.astype(float) / 255.0
+    transition_mask = dilated_mask_f - fly_mask_f
+    transition_mask = np.clip(transition_mask, 0, 1)[:, :, np.newaxis]
+
+    background2 = (
+        blurred_img * fly_mask_f[:, :, np.newaxis] +
+        (background2 * (1 - transition_mask) + blurred_img * transition_mask) * (1 - fly_mask_f[:, :, np.newaxis])
+    ).astype(np.uint8)
+
+    # convert back to rgb
+    background2 = cv2.cvtColor(background2, cv2.COLOR_BGR2RGB)
+
+    # return bounding box as well
     bbox_coords = [col, row, width, height]
 
-    return background, bbox_coords
+    return background2, bbox_coords
 
 def draw_flies(background, fly_positions, fly_dir):
     """Draws flies on the background"""
@@ -78,9 +120,7 @@ def draw_flies(background, fly_positions, fly_dir):
         cropped_fly_path = random.choice(fly_dir)
         cropped_fly = Image.open(cropped_fly_path)
 
-        # paste fly
-        angle = np.random.randint(0, 180)
-        new_image, bbox_coords = add_fly(new_image, cropped_fly, row, col, angle)
+        new_image, bbox_coords = add_fly(new_image, cropped_fly, row, col)
 
         # get yolo bounding box label
         bbox_labels.append(bbox_coords)
@@ -91,11 +131,11 @@ if __name__ == "__main__":
     # Choose things for the generated data 
     background_labels = os.listdir("dataset/backgrounds")
     n_datapoints = 50
-    fly_radius = 5
+    fly_radius = 35
     dataset_folder = "yolo_dataset" # Folder in the dataset directory to save the images and masks to
 
     cropped_flies = os.listdir("dataset/flies")
-    cropped_flies = ["dataset/flies" + fly for fly in cropped_flies]
+    cropped_flies = ["dataset/flies/" + fly for fly in cropped_flies]
 
     # Loop through the backgrounds included for this dataset
     for label in background_labels:
