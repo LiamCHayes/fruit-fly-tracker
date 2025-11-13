@@ -5,7 +5,22 @@ Utility functions to use for synthetic data generation
 import warnings
 import numpy as np
 from PIL import Image, ImageOps
+import cv2
 import matplotlib.pyplot as plt
+
+def write_to_video(frames, file_path, color=True):
+    out = cv2.VideoWriter(file_path, 
+                          cv2.VideoWriter_fourcc(*'mp4v'), 
+                          30, 
+                          (frames[0].shape[1], frames[0].shape[0]), 
+                          isColor=color)
+
+    # frames = [frame.astype(np.uint8) * 255 for frame in frames]
+    for frame in frames:
+        out.write(frame)
+
+    out.release()
+    print(f"Video saved to {file_path}!")
 
 # Load Image functions
 def load_and_resize_image(img_path, target_size=(3072, 2048)):
