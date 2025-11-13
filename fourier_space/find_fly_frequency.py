@@ -9,7 +9,7 @@ from high_pass_filter import high_pass
 from utilities.image_utils import get_blocks, ft_viz
 
 if __name__ == "__main__":
-    fly_seq = "grape"
+    fly_seq = "cabinet"
 
     if fly_seq == "grape":
         dir_path = "../real_data/grapes_frames/"
@@ -35,8 +35,8 @@ if __name__ == "__main__":
     # loop through important blocks
     fts = []
     for i, block in enumerate(blocks):
-        if i not in block_idxs:
-            continue
+        #if i not in block_idxs:
+           # continue
         print(i)
 
         # fourier transform of blocks
