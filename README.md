@@ -18,3 +18,4 @@ Future:
 - Use SLAM and optical flow in combination with the trained models to detect, track, and predict fruit flies while the camera is moving
 - Use 3D reconstruction to judge distances and determine what is in range
 - Synchronize trigger with predictions
+
