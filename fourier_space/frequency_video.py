@@ -5,7 +5,7 @@ import cv2
 from PIL import Image
 import numpy as np
 from tqdm import tqdm
-from high_pass_filter import high_pass
+from utilities.filters import high_pass
 
 # load grapes frames
 dir_path = "../real_data/grapes_frames/"
