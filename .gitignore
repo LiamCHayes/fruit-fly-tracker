@@ -1,3 +1,6 @@
 utilities.egg-info/
 utilities/__pycache__/
+*.mp4
+*.jpeg
+*.png
 .venv
