@@ -93,7 +93,26 @@ def second_order_mrf(q_k, mask, variance_s, T, n_iter):
 
     return mask
 
-def threshold_test(frames, variance_s, mrf_order, T, n_iter):
+def dilation(frames, kernel_size, iters):
+    dilation_kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    dil_list = []
+    for frame in frames:
+        dilated_frame = cv2.dilate(frame, dilation_kernel, iterations=iters)
+        dil_list.append(dilated_frame)
+
+    return np.stack(dil_list)
+
+def erosion(frames, kernel_size, iters):
+    erosion_kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    ero_list = []
+    for frame in frames:
+        eroded_frame = cv2.erode(frame, erosion_kernel, iterations=iters)
+        ero_list.append(eroded_frame)
+
+    return np.stack(ero_list)
+
+
+def threshold_test(frames, variance_s, mrf_order, T, n_iter, ero_dil=False):
     """
     Implement fixed threshold hypothesis test
     Takes a list of frames (numpy arrays) and returns a list of realizations based on the fixed threshold hypothesis test
@@ -107,7 +126,7 @@ def threshold_test(frames, variance_s, mrf_order, T, n_iter):
     prev_intensities = np.stack(prev_intensities, axis=-1)
 
     # Subtract frames
-    differences = (intensities - prev_intensities) ** 2
+    differences = (intensities - prev_intensities) **2
 
     # Calculate threshold
     theta = 1 # assumed from instructions
@@ -115,6 +134,16 @@ def threshold_test(frames, variance_s, mrf_order, T, n_iter):
     threshold = 2 * variance_s * np.log(2 * L * theta / np.sqrt(2 * np.pi * variance_s))
 
     mask = differences > threshold
+
+    if ero_dil == True:
+        mask = (mask * 1).astype(np.uint8)
+        #opening
+        #mask = erosion(mask, 2, 1)
+        #mask = dilation(mask, 2, 1)
+
+        #closing
+        mask = dilation(mask, 2, 1)
+        #mask = erosion(mask, 2, 1)
 
     if mrf_order == 1:
         mask = first_order_mrf(differences, mask, variance_s, T, n_iter)
@@ -126,13 +155,13 @@ def threshold_test(frames, variance_s, mrf_order, T, n_iter):
 
 if __name__ == "__main__":
     # Create list of frames
-    video_name = "fruit_fly_vial"
-    input_dir = f"../real_data/{video_name}_frames/"
+    video_name = "fixed_window"
+    input_dir = f"../real_data/{video_name}_frames/minpooled/"
     file_paths = [input_dir+fn for fn in sorted(os.listdir(input_dir))]
     frames = [np.array(Image.open(fp)) for fp in file_paths]
 
     # Hyperparameters
-    variance_s = 10
+    variance_s = 5
     mrf_order = 1
     T = 1
     n_iter = 2
@@ -140,15 +169,21 @@ if __name__ == "__main__":
     # fixed threshold test
     print("fixed threshold...")
     fixed_mask_frames, differences = threshold_test(frames, variance_s, 0, 0, 0)
-    write_to_video(fixed_mask_frames, f"output/{video_name}_fixed_threshold.mp4", False)
+    write_to_video(fixed_mask_frames, f"{video_name}_fixed_threshold.mp4", False)
+
+    # fixed threshold test w/ erosion and dilation
+    print("erosion and dilation...")
+    fixed_mask_frames, differences = threshold_test(frames, variance_s, 0, 0, 0, True)
+    write_to_video(fixed_mask_frames, f"{video_name}_erosion_dilation.mp4", False)
+
 
     # first order mrf test
     print("first order mrf...")
-    first_mask_frames, _ = threshold_test(frames, variance_s, 1, T, n_iter)
-    write_to_video(first_mask_frames, f"output/{video_name}_first_order.mp4", False)
+    #first_mask_frames, _ = threshold_test(frames, variance_s, 1, T, n_iter)
+    #write_to_video(first_mask_frames, f"output/{video_name}_first_order.mp4", False)
 
     # second order mrf test
     print("second order mrf...")
-    second_mask_frames, _ = threshold_test(frames, variance_s, 2, T, n_iter)
-    write_to_video(second_mask_frames, f"output/{video_name}_second_order.mp4", False)
+    #second_mask_frames, _ = threshold_test(frames, variance_s, 2, T, n_iter)
+    #write_to_video(second_mask_frames, f"output/{video_name}_second_order.mp4", False)
 
