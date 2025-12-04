@@ -4,7 +4,7 @@ import numpy as np
 def write_to_video(frames, file_path, color=True):
     out = cv2.VideoWriter(file_path, 
                           cv2.VideoWriter_fourcc(*'mp4v'), 
-                          30, 
+                          10, 
                           (frames[0].shape[1], frames[0].shape[0]), 
                           isColor=color)
 

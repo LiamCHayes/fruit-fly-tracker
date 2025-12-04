@@ -85,7 +85,7 @@ def subtract_and_filter(actual, background):
     blurred_magnitude = cv2.GaussianBlur(magnitude, (11, 11), 0)
 
     # Frame averaging
-    min_level = 10
+    min_level = 0
     activation_bool = [np.sum(t) > min_level for t in filtered_thresholds]
     max_conf_threshold = np.max([0, np.sum(activation_bool)])
 
@@ -146,6 +146,9 @@ if __name__ == "__main__":
         spatial_subtracted_norm1 = np.sqrt(spatial_subtracted)
         spatial_subtracted_norm2 = spatial_subtracted / np.max(spatial_subtracted) * 255
 
+        # full_frame = make_2_comparison(actual_color, cv2.cvtColor(spatial_subtracted_norm1, cv2.COLOR_GRAY2BGR))
+        # video_frames.append(full_frame)
+
         thresholds = get_thresholds(spatial_subtracted_norm1)
 
         # Median filter on the thresholds
@@ -157,11 +160,11 @@ if __name__ == "__main__":
         threshold_sums.append(threshold_sum)
 
         # full_frame = make_6_comparison(filtered_thresholds[0],
-                                       # filtered_thresholds[1],
-                                       # filtered_thresholds[2],
-                                       # filtered_thresholds[3],
-                                       # filtered_thresholds[4],
-                                       # filtered_thresholds[5])
+                                         # filtered_thresholds[1],
+                                         # filtered_thresholds[2],
+                                         # filtered_thresholds[3],
+                                         # filtered_thresholds[4],
+                                         # filtered_thresholds[5])
         # full_frame = full_frame * 255
         # full_frame = full_frame.astype(np.uint8)
         # video_frames.append(full_frame)
@@ -181,7 +184,7 @@ if __name__ == "__main__":
         # plt.show()
 
         # Frame averaging
-        min_level = 10
+        min_level = 0
         activation_bool = [np.sum(t) > min_level for t in filtered_thresholds]
         max_conf_threshold = np.max([0, np.sum(activation_bool)])
 
@@ -189,19 +192,28 @@ if __name__ == "__main__":
         summed_thresholds = np.sum(stacked_thresholds, axis=0)
         summed_thresholds = summed_thresholds - blurred_magnitude / 5
         averaged_thresholds = summed_thresholds / max_conf_threshold
+        averaged_thresholds[averaged_thresholds < 0] = 0
+
+        # averaged_thresholds_img = averaged_thresholds * 255
+        # averaged_thresholds_img = cv2.cvtColor(averaged_thresholds_img.astype(np.uint8), cv2.COLOR_GRAY2BGR)
+        # full_frame = make_2_comparison(actual_color, averaged_thresholds_img)
+        # video_frames.append(full_frame)
 
         # Post-process the averaged frame
         scaling_factor = 4
-        averaged_thresholds[averaged_thresholds < 0] = 0
         averaged_thresholds = averaged_thresholds ** scaling_factor
         averaged_thresholds = averaged_thresholds / np.max(averaged_thresholds) * 255
 
+        # averaged_thresholds_img = cv2.cvtColor(averaged_thresholds.astype(np.uint8), cv2.COLOR_GRAY2BGR)
+        # full_frame = make_2_comparison(actual_color, averaged_thresholds_img)
+        # video_frames.append(full_frame)
+
         final_thresholded = averaged_thresholds > 200
         final_thresholded = final_thresholded.astype(np.uint8) * 255
-        final_thresholded_color = cv2.cvtColor(final_thresholded, cv2.COLOR_GRAY2BGR)
 
-        full_frame = make_2_comparison(actual_color, final_thresholded_color)
-        video_frames.append(full_frame)
+        # final_thresholded_color = cv2.cvtColor(final_thresholded, cv2.COLOR_GRAY2BGR)
+        # full_frame = make_2_comparison(actual_color, final_thresholded_color)
+        # video_frames.append(full_frame)
 
         # Group detections with cv2 contours
         contours, _ = cv2.findContours(final_thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
