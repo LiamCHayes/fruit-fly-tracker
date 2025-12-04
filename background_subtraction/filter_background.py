@@ -133,6 +133,8 @@ if __name__ == "__main__":
     video_frames = []
     threshold_sums = []
     for i in tqdm(range(len(background_paths))):
+        background_color = Image.open(background_paths[i]).convert('RGB')
+        background_color = np.array(background_color).astype(np.float32)
         background = Image.open(background_paths[i]).convert('L')
         background = np.array(background).astype(np.float32)
 
@@ -140,6 +142,9 @@ if __name__ == "__main__":
         actual_color = cv2.cvtColor(np.array(actual_color), cv2.COLOR_RGB2BGR)
         actual = Image.open(actual_paths[i]).resize((512, 256), resample=Image.BILINEAR).convert('L')
         actual = np.array(actual).astype(np.float32)
+
+        full_frame = make_2_comparison(actual_color, cv2.cvtColor(background_color, cv2.COLOR_RGB2BGR))
+        video_frames.append(full_frame)
 
         # Spatial domain subtraction and thresholding
         spatial_subtracted = (actual - background)**2
@@ -232,8 +237,8 @@ if __name__ == "__main__":
         contour_img = cv2.cvtColor(final_thresholded, cv2.COLOR_GRAY2BGR)
         for c in centers:
             cv2.circle(contour_img, (c[0], c[1]), 4, (0, 0, 255), -1)
-        full_frame = make_2_comparison(actual_color, contour_img)
-        video_frames.append(full_frame)
+        # full_frame = make_2_comparison(actual_color, contour_img)
+        # video_frames.append(full_frame)
 
     # Write video
     output_dir = "output"
