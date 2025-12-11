@@ -8,7 +8,7 @@ from utilities.image_utils import write_to_video, show_image
 from tqdm import tqdm
 
 # get frame names
-dir = "../real_data/fixed_window_frames/"
+dir = "../real_data/fixed_window_frames/minpooled/"
 frame_names = sorted(os.listdir(dir))
 paths = [dir + frame_name for frame_name in frame_names]
 
@@ -22,7 +22,7 @@ for i, path in tqdm(enumerate(paths)):
     curr_frame = Image.open(path).convert('L')
     curr_frame = np.array(curr_frame).astype(np.float32)
 
-    subtracted = (curr_frame - prev_frame)**2
+    subtracted = inp.sqrt((curr_frame - prev_frame)**2)
     thresholded = subtracted > 90
     thresholded = thresholded.astype(np.uint8) * 255
 
